@@ -18,13 +18,29 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ---------------------------
-# LOAD VECTOR DB
+# GLOBAL DB VARIABLE
 # ---------------------------
-embeddings = FastEmbedEmbeddings()
+db = None
 
-db = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
 
-print("✅ Vector DB loaded successfully!")
+# ---------------------------
+# LOAD VECTOR DB LAZILY
+# ---------------------------
+def get_db():
+    global db
+
+    if db is None:
+        embeddings = FastEmbedEmbeddings()
+
+        db = FAISS.load_local(
+            "vectorstore",
+            embeddings,
+            allow_dangerous_deserialization=True,
+        )
+
+        print("✅ Vector DB loaded successfully!")
+
+    return db
 
 
 # ---------------------------
@@ -32,6 +48,9 @@ print("✅ Vector DB loaded successfully!")
 # ---------------------------
 def ask_question(question):
     try:
+        # Load DB only when needed
+        db = get_db()
+
         if not db:
             return "⚠️ No documents loaded."
 
@@ -68,7 +87,8 @@ def ask_question(question):
             return "⚠️ Gemini API key missing."
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite", contents=prompt
+            model="gemini-2.5-flash-lite",
+            contents=prompt,
         )
 
         return response.text if response.text else "No response generated."
