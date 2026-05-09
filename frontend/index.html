@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+    <head>
+        <title>University Website 🎓</title>
+
+        <style>
+            * {
+                box-sizing: border-box; /* ✅ FIX OVERFLOW */
+            }
+        </style>
+    </head>
+
+    <body
+        style="
+            margin: 0;
+            font-family: Arial;
+            background: linear-gradient(135deg, #0ea5e9, #1e3a8a);
+            height: 100vh;
+            color: white;
+        "
+    >
+        <!-- 🌐 MAIN WEBSITE -->
+        <div style="text-align: center; padding-top: 150px">
+            <h1 style="font-size: 50px">🎓 NIST University</h1>
+            <p style="font-size: 20px">
+                Welcome to the Dummy University Website
+            </p>
+        </div>
+
+        <!-- 💬 CHAT BUTTON -->
+        <div
+            id="chatButton"
+            onclick="toggleChat()"
+            style="
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #22c55e;
+                color: white;
+                padding: 15px;
+                border-radius: 50%;
+                cursor: pointer;
+            "
+        >
+            🤖
+        </div>
+
+        <!-- 👋 HI BUBBLE -->
+        <div
+            id="hiBubble"
+            style="
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                background: white;
+                color: black;
+                padding: 8px 12px;
+                border-radius: 10px;
+            "
+        >
+            Hi 👋
+        </div>
+
+        <!-- 🤖 CHATBOX -->
+        <div
+            id="chatbox"
+            style="
+                display: none;
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                width: 320px;
+                background: #1e293b;
+                border-radius: 15px;
+                padding: 15px;
+            "
+        >
+            <h3 style="text-align: center">AI Helpdesk</h3>
+
+            <!-- 💬 DEFAULT MESSAGE -->
+            <div
+                style="
+                    background: #020617;
+                    padding: 10px;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    margin-bottom: 10px;
+                "
+            >
+                👋 Hi! I’m your AI assistant. Ask me anything about the
+                university.
+            </div>
+
+            <!-- INPUT -->
+            <input
+                id="query"
+                placeholder="Ask something..."
+                style="
+                    width: 100%;
+                    padding: 10px;
+                    border-radius: 10px;
+                    border: none;
+                    margin-top: 5px;
+                "
+            />
+
+            <!-- BUTTONS -->
+            <div
+                style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 10px;
+                    gap: 10px;
+                "
+            >
+                <button
+                    onclick="sendQuery()"
+                    style="
+                        flex: 1;
+                        padding: 10px;
+                        border: none;
+                        border-radius: 10px;
+                        background: #3b82f6;
+                        color: white;
+                    "
+                >
+                    Ask
+                </button>
+
+                <button
+                    onclick="startVoice()"
+                    style="
+                        padding: 10px 15px;
+                        border: none;
+                        border-radius: 10px;
+                        background: #22c55e;
+                        color: white;
+                    "
+                >
+                    🎤
+                </button>
+            </div>
+
+            <!-- STATUS -->
+            <p
+                id="status"
+                style="font-size: 13px; margin-top: 8px; color: #94a3b8"
+            ></p>
+
+            <!-- ANSWER -->
+            <div
+                id="answer"
+                style="
+                    margin-top: 10px;
+                    background: #020617;
+                    padding: 10px;
+                    border-radius: 10px;
+                    min-height: 50px;
+                "
+            ></div>
+        </div>
+
+        <script>
+            const API_URL = "http://127.0.0.1:8000/ask";
+
+            function toggleChat() {
+                const chat = document.getElementById("chatbox");
+                const bubble = document.getElementById("hiBubble");
+
+                chat.style.display =
+                    chat.style.display === "none" ? "block" : "none";
+                bubble.style.display = "none";
+            }
+
+            function sendQuery() {
+                const query = document.getElementById("query").value;
+                const status = document.getElementById("status");
+                const answerDiv = document.getElementById("answer");
+
+                if (!query) return;
+
+                status.innerText = "⏳ Thinking...";
+                answerDiv.innerText = "";
+
+                fetch(`${API_URL}?query=${encodeURIComponent(query)}`)
+                    .then((res) => res.json())
+                    .then((data) => {
+                        answerDiv.innerText = data.answer;
+                        status.innerText = "✅ Done";
+                    })
+                    .catch(() => {
+                        status.innerText = "❌ Error";
+                    });
+            }
+
+            function startVoice() {
+                const status = document.getElementById("status");
+
+                if (!("webkitSpeechRecognition" in window)) {
+                    alert("Speech not supported");
+                    return;
+                }
+
+                const recognition = new webkitSpeechRecognition();
+
+                recognition.lang = "en-IN";
+                recognition.interimResults = false;
+
+                status.innerText = "🎤 Listening...";
+
+                recognition.start();
+
+                recognition.onresult = function (event) {
+                    const text = event.results[0][0].transcript;
+                    document.getElementById("query").value = text;
+                    status.innerText = "📝 Captured: " + text + " (Click Ask)";
+                };
+
+                recognition.onerror = function () {
+                    status.innerText = "❌ Voice error";
+                };
+
+                recognition.onend = function () {
+                    if (status.innerText.includes("Listening")) {
+                        status.innerText = "⚠️ No speech detected";
+                    }
+                };
+            }
+        </script>
+    </body>
+</html>
