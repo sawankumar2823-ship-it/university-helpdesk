@@ -2,8 +2,8 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
+from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
 
 # ---------------------------
 # ENV SETUP
@@ -20,7 +20,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 # ---------------------------
 # LOAD VECTOR DB
 # ---------------------------
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+embeddings = FastEmbedEmbeddings()
 
 db = FAISS.load_local("vectorstore", embeddings, allow_dangerous_deserialization=True)
 
