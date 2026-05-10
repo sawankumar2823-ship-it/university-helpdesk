@@ -161,7 +161,7 @@
         </div>
 
         <script>
-            const API_URL = "http://127.0.0.1:8000/ask";
+            const API_URL = "https://university-helpdesk-q9pw.onrender.com";
 
             function toggleChat() {
                 const chat = document.getElementById("chatbox");
@@ -182,7 +182,7 @@
                 status.innerText = "⏳ Thinking...";
                 answerDiv.innerText = "";
 
-                fetch(`${API_URL}?query=${encodeURIComponent(query)}`)
+                fetch(`${API_URL}/ask?query=${encodeURIComponent(query)}`)
                     .then((res) => res.json())
                     .then((data) => {
                         answerDiv.innerText = data.answer;
